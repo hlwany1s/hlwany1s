@@ -585,8 +585,7 @@
   // ==================== Render Results ====================
   function renderSingleCodeResult(code, category) {
     const link = makeLink(code);
-    const msgWithCode = `:دا الكود لو هتبعته لحد\n${code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب\u2764\ufe0f`;
-    const msgWithLink = msgWithCode;
+    const msg = `:دا الكود لو هتبعته لحد\n${code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️`;
     document.getElementById('singleCodeResult').innerHTML = `
       <div class="code-result-card">
         <div class="code-label">فئة ${category} — الكود</div>
@@ -594,21 +593,18 @@
         <div class="code-actions">
           <button class="btn-copy" onclick="copyText('${code}', null, this)">📋 نسخ الكود</button>
           <button class="btn-link" onclick="copyText('${link}', null, this)">🔗 نسخ اللينك</button>
-        </div>
-      </div>
-      <div style="margin-top:14px;">
-        <div class="msg-section-label">📨 رسالة جاهزة للإرسال للعميل</div>
-        <div class="send-msg-box" id="sendMsgBox_${code}">${':دا الكود لو هتبعته لحد'}
-${code}
-${'ودا لينك لو هتاخده ليك هيفتح معاك على طول'}
-${link}
-${'نورتنا ونتمنى نشوفك تاني قريب❤️'}</div>
-        <div class="msg-copy-btns">
-          <button class="btn-copy" onclick="copyMsgBox('sendMsgBox_${code}', this)">📋 نسخ الرسالة كاملة</button>
+          <button class="btn-copy" style="background:#e67e22;" onclick="copyRawMsg(\`${msg}\`, this)">📨 نسخ الرسالة</button>
         </div>
       </div>`;
   }
 
+
+  function copyRawMsg(msg, btn) {
+    const ok = () => { const o = btn.textContent; btn.textContent = '✅'; setTimeout(() => btn.textContent = o, 1500); };
+    const fail = () => { btn.textContent = '❌'; };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(msg).then(ok).catch(() => fallbackCopy(msg, ok, fail));
+    else fallbackCopy(msg, ok, fail);
+  }
   function copyMsgBox(elId, btn) {
     const el = document.getElementById(elId);
     if (!el) return;
@@ -623,27 +619,16 @@ ${'نورتنا ونتمنى نشوفك تاني قريب❤️'}</div>
     const container = document.getElementById('bulkResults');
     if (!codes || !codes.length) { container.innerHTML = ''; return; }
     container.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:var(--muted)">تم سحب ${codes.length} كود</div>` +
-      codes.map((item, idx) => {
+      codes.map((item) => {
         const link = makeLink(item.code);
-        const msgId = 'bulkMsg_' + idx;
-        const msgText = `:دا الكود لو هتبعته لحد
-${item.code}
-ودا لينك لو هتاخده ليك هيفتح معاك على طول
-${link}
-نورتنا ونتمنى نشوفك تاني قريب❤️`;
-        return `<div class="bulk-code-row" style="flex-direction:column;align-items:stretch;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="bulk-cat-badge">${item.category} ج</span>
-            <span class="bulk-code-val">${item.code}</span>
-            <div class="bulk-btns">
-              <button class="btn-copy" onclick="copyText('${item.code}', null, this)">📋</button>
-              <button class="btn-link" onclick="copyText('${link}', null, this)">🔗</button>
-            </div>
-          </div>
-          <div class="msg-section-label" style="margin-top:8px;">📨 رسالة جاهزة</div>
-          <div class="send-msg-box" id="${msgId}">${msgText}</div>
-          <div class="msg-copy-btns">
-            <button class="btn-copy" onclick="copyMsgBox('${msgId}', this)">📋 نسخ الرسالة</button>
+        const msg = `:دا الكود لو هتبعته لحد\n${item.code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️`;
+        return `<div class="bulk-code-row">
+          <span class="bulk-cat-badge">${item.category} ج</span>
+          <span class="bulk-code-val">${item.code}</span>
+          <div class="bulk-btns">
+            <button class="btn-copy" onclick="copyText('${item.code}', null, this)">📋</button>
+            <button class="btn-link" onclick="copyText('${link}', null, this)">🔗</button>
+            <button class="btn-copy" style="background:#e67e22;padding:8px;" onclick="copyRawMsg(\`${msg}\`, this)">📨</button>
           </div>
         </div>`;
       }).join('');
