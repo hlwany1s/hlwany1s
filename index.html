@@ -96,6 +96,32 @@
       .tabs-nav { flex-direction: column; }
       .code-result-card .code-value { font-size: 16px; letter-spacing: 1px; }
     }
+
+    /* رسالة الإرسال */
+    .send-msg-box {
+      background: #072f2a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--ink);
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .msg-section-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .msg-copy-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
@@ -559,6 +585,8 @@
   // ==================== Render Results ====================
   function renderSingleCodeResult(code, category) {
     const link = makeLink(code);
+    const msgWithCode = `:دا الكود لو هتبعته لحد\n${code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب\u2764\ufe0f`;
+    const msgWithLink = msgWithCode;
     document.getElementById('singleCodeResult').innerHTML = `
       <div class="code-result-card">
         <div class="code-label">فئة ${category} — الكود</div>
@@ -567,21 +595,55 @@
           <button class="btn-copy" onclick="copyText('${code}', null, this)">📋 نسخ الكود</button>
           <button class="btn-link" onclick="copyText('${link}', null, this)">🔗 نسخ اللينك</button>
         </div>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="msg-section-label">📨 رسالة جاهزة للإرسال للعميل</div>
+        <div class="send-msg-box" id="sendMsgBox_${code}">${':دا الكود لو هتبعته لحد'}
+${code}
+${'ودا لينك لو هتاخده ليك هيفتح معاك على طول'}
+${link}
+${'نورتنا ونتمنى نشوفك تاني قريب❤️'}</div>
+        <div class="msg-copy-btns">
+          <button class="btn-copy" onclick="copyMsgBox('sendMsgBox_${code}', this)">📋 نسخ الرسالة كاملة</button>
+        </div>
       </div>`;
+  }
+
+  function copyMsgBox(elId, btn) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const text = el.innerText;
+    const ok = () => { const o = btn.textContent; btn.textContent = '✅ تم النسخ!'; setTimeout(() => btn.textContent = o, 1500); };
+    const fail = () => { btn.textContent = '❌ فشل'; };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(ok).catch(() => fallbackCopy(text, ok, fail));
+    else fallbackCopy(text, ok, fail);
   }
 
   function renderBulkResults(codes) {
     const container = document.getElementById('bulkResults');
     if (!codes || !codes.length) { container.innerHTML = ''; return; }
     container.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:var(--muted)">تم سحب ${codes.length} كود</div>` +
-      codes.map(item => {
+      codes.map((item, idx) => {
         const link = makeLink(item.code);
-        return `<div class="bulk-code-row">
-          <span class="bulk-cat-badge">${item.category} ج</span>
-          <span class="bulk-code-val">${item.code}</span>
-          <div class="bulk-btns">
-            <button class="btn-copy" onclick="copyText('${item.code}', null, this)">📋</button>
-            <button class="btn-link" onclick="copyText('${link}', null, this)">🔗</button>
+        const msgId = 'bulkMsg_' + idx;
+        const msgText = `:دا الكود لو هتبعته لحد
+${item.code}
+ودا لينك لو هتاخده ليك هيفتح معاك على طول
+${link}
+نورتنا ونتمنى نشوفك تاني قريب❤️`;
+        return `<div class="bulk-code-row" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="bulk-cat-badge">${item.category} ج</span>
+            <span class="bulk-code-val">${item.code}</span>
+            <div class="bulk-btns">
+              <button class="btn-copy" onclick="copyText('${item.code}', null, this)">📋</button>
+              <button class="btn-link" onclick="copyText('${link}', null, this)">🔗</button>
+            </div>
+          </div>
+          <div class="msg-section-label" style="margin-top:8px;">📨 رسالة جاهزة</div>
+          <div class="send-msg-box" id="${msgId}">${msgText}</div>
+          <div class="msg-copy-btns">
+            <button class="btn-copy" onclick="copyMsgBox('${msgId}', this)">📋 نسخ الرسالة</button>
           </div>
         </div>`;
       }).join('');
