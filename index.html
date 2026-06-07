@@ -574,8 +574,7 @@
             <div class="ops-time">${time}</div>
           </div>
           <div class="ops-btns">
-            <button class="btn-copy" onclick="copyText('${op.code}', null, this)">📋 كود</button>
-            <button class="btn-link" onclick="copyText('${link}', null, this)">🔗 لينك</button>
+            <button class="btn-copy" style="background:#e67e22;color:#fff;" onclick="copyRawMsg(\`كارت ${op.category} ج.م 🍎\n:دا الكود لو هتبعته لحد\n${op.code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️\`, this)">📨 نسخ الرسالة</button>
           </div>
         </div>`;
       }).join('');
@@ -585,15 +584,13 @@
   // ==================== Render Results ====================
   function renderSingleCodeResult(code, category) {
     const link = makeLink(code);
-    const msg = `:دا الكود لو هتبعته لحد\n${code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️`;
+    const msg = `كارت ${category} ج.م 🍎\n:دا الكود لو هتبعته لحد\n${code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️`;
     document.getElementById('singleCodeResult').innerHTML = `
       <div class="code-result-card">
         <div class="code-label">فئة ${category} — الكود</div>
         <div class="code-value">${code}</div>
         <div class="code-actions">
-          <button class="btn-copy" onclick="copyText('${code}', null, this)">📋 نسخ الكود</button>
-          <button class="btn-link" onclick="copyText('${link}', null, this)">🔗 نسخ اللينك</button>
-          <button class="btn-copy" style="background:#e67e22;" onclick="copyRawMsg(\`${msg}\`, this)">📨 نسخ الرسالة</button>
+          <button class="btn-copy" style="background:#e67e22;color:#fff;" onclick="copyRawMsg(\`${msg}\`, this)">📨 نسخ الرسالة</button>
         </div>
       </div>`;
   }
@@ -621,14 +618,12 @@
     container.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:var(--muted)">تم سحب ${codes.length} كود</div>` +
       codes.map((item) => {
         const link = makeLink(item.code);
-        const msg = `:دا الكود لو هتبعته لحد\n${item.code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️`;
+        const msg = `كارت ${item.category} ج.م 🍎\n:دا الكود لو هتبعته لحد\n${item.code}\nودا لينك لو هتاخده ليك هيفتح معاك على طول\n${link}\nنورتنا ونتمنى نشوفك تاني قريب❤️`;
         return `<div class="bulk-code-row">
           <span class="bulk-cat-badge">${item.category} ج</span>
           <span class="bulk-code-val">${item.code}</span>
           <div class="bulk-btns">
-            <button class="btn-copy" onclick="copyText('${item.code}', null, this)">📋</button>
-            <button class="btn-link" onclick="copyText('${link}', null, this)">🔗</button>
-            <button class="btn-copy" style="background:#e67e22;padding:8px;" onclick="copyRawMsg(\`${msg}\`, this)">📨</button>
+            <button class="btn-copy" style="background:#e67e22;color:#fff;padding:8px;" onclick="copyRawMsg(\`${msg}\`, this)">📨</button>
           </div>
         </div>`;
       }).join('');
