@@ -194,7 +194,7 @@
   <div class="tab-link" id="tab-wallets" onclick="switchTab('wallets')">💳 المحافظ</div>
 </nav>
 
-<div class="admin-box">
+<div class="admin-box" id="adminBox">
   <select id="globalAdmin" onchange="saveGlobalSession()">
     <option value="">-- اختر الأدمن --</option>
     <option value="Ahmed">Ahmed</option>
@@ -228,7 +228,7 @@
     </div>
     <div id="status"></div>
     <table id="logTable">
-      <thead><tr><th>الوقت</th><th>الأدمن</th><th>جنيه</th><th>عملات</th><th>الحالة</th><th></th></tr></thead>
+      <thead><tr><th>الوقت</th><th>الأدمن</th><th>جنيه</th><th>عملات</th><th>الحالة</th><th>المحفظة</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
   </section>
@@ -288,6 +288,9 @@
         </select>
         <input id="adminPin" type="password" placeholder="كلمة سر الأدمن">
       </div>
+      <select id="itWallet" style="margin-top:10px;" onchange="localStorage.setItem('it_wallet', this.value)">
+        <option value="">-- استلمت على (اختياري) --</option>
+      </select>
       <div class="helper-text">التحقق من كلمة السر هيتم من قاعدة البيانات حسب الأدمن المختار.</div>
       <button id="btnPull" class="btn-itunes">سحب الكود 🚀</button>
       <div id="singleCodeResult"></div>
@@ -297,6 +300,9 @@
     <div id="panelBulk" style="display:none;">
       <div id="bulkRows"></div>
       <button type="button" onclick="addBulkRow()" style="margin-top:10px;background:var(--pill);color:var(--accent);border:1px dashed var(--accent);font-size:14px;min-height:40px;">+ إضافة فئة</button>
+      <select id="itBulkWallet" style="margin-top:10px;" onchange="localStorage.setItem('it_wallet', this.value)">
+        <option value="">-- استلمت على (اختياري) --</option>
+      </select>
       <input id="bulkPin" type="password" placeholder="كلمة سر الأدمن" style="margin-top:14px;">
       <button id="btnBulkPull" class="btn-itunes" style="margin-top:12px;">سحب الكل دفعة واحدة 🚀</button>
       <div id="bulkStatus" style="margin-top:10px;font-size:14px;text-align:center;min-height:20px;"></div>
@@ -319,6 +325,8 @@
 
 <script>
   // ==================== Supabase Config ====================
+  let wUnlocked = false;
+
   const SB_URL = 'https://yigedrshfiftehckksil.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZ2VkcnNoZmlmdGVoY2trc2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNTA5NjQsImV4cCI6MjA5NTgyNjk2NH0.40Gj4yxV2Aw4_D0o4GI9OEOef5Ujl-tLGg9bwchq084';
   const SB_HEADERS = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
@@ -384,6 +392,8 @@
     document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
     document.getElementById(t + '-page').classList.add('active');
     document.getElementById('tab-' + t).classList.add('active');
+    // اخبي الادمن في صفحه المحافظ
+    document.getElementById('adminBox').style.display = t === 'wallets' ? 'none' : 'block';
     if (t === 'itunes') { updateInv(); loadLastOps(); }
     if (t === 'wallets') { if (wUnlocked) loadWallets(); }
   }
@@ -452,10 +462,12 @@
 
     // ✅ Optimistic UI — يظهر فوراً
     const tempId = 'temp_' + Date.now();
+    const walletSel = document.getElementById('ttWallet');
+    const walletLabel = walletSel.value ? walletSel.options[walletSel.selectedIndex].text.slice(-4) : '';
     const tbody = document.querySelector('#logTable tbody');
     tbody.innerHTML = `<tr id="${tempId}" style="background:#0a3d37;opacity:0.6;">
       <td>${ts}</td><td>${admin}</td><td>${fmt(money)}</td><td>${fmt(coins)}</td>
-      <td>⏳</td><td></td>
+      <td>⏳</td><td style="font-size:12px;color:var(--muted)">${walletLabel}</td>
     </tr>` + tbody.innerHTML;
 
     statusEl.textContent = 'جاري الحفظ...';
@@ -478,6 +490,7 @@
           row.style.opacity = '1';
           row.innerHTML = `<td>${ts}</td><td>${admin}</td><td>${fmt(money)}</td><td>${fmt(coins)}</td>
             <td>✔️</td>
+            <td style="font-size:12px;color:var(--muted)">${walletLabel}</td>
             <td><button class="btn-del-row" onclick="deleteOp('${newId}', this)">🗑️</button></td>`;
         }
         statusEl.textContent = 'تم الحفظ بنجاح ✔️';
@@ -540,7 +553,8 @@
       await sbPatch('itunes_stock', 'id=eq.' + item.id, { available: false });
       // سجّل العملية
       const bizDate = new Date(new Date().getTime() - 3 * 3600000).toISOString().split('T')[0];
-      await sbPost('itunes_ops', { admin, category: cat, code: item.code, biz_date: bizDate });
+      const itWalId = document.getElementById('itWallet').value;
+      await sbPost('itunes_ops', { admin, category: cat, code: item.code, biz_date: bizDate, wallet_id: itWalId ? parseInt(itWalId) : null });
 
       renderSingleCodeResult(item.code, cat);
       document.getElementById('adminPin').value = '';
@@ -584,7 +598,8 @@
         }
         for (const item of codes) {
           await sbPatch('itunes_stock', 'id=eq.' + item.id, { available: false });
-          await sbPost('itunes_ops', { admin, category: req.category, code: item.code, biz_date: bizDate });
+          const itBWalId = document.getElementById('itBulkWallet').value;
+          await sbPost('itunes_ops', { admin, category: req.category, code: item.code, biz_date: bizDate, wallet_id: itBWalId ? parseInt(itBWalId) : null });
           pulled.push({ category: req.category, code: item.code });
         }
       }
@@ -870,7 +885,7 @@
     btn.disabled = false;
   }
 
-  document.getElementById('wModalOverlay').addEventListener('click', function(e) { if (e.target === this) wCloseModal(); });
+  const _wmo = document.getElementById('wModalOverlay'); if (_wmo) _wmo.addEventListener('click', function(e) { if (e.target === this) wCloseModal(); });
   // ==================== Init ====================
 
   // حفظ واسترجاع الأدمن والمحفظة
@@ -890,22 +905,41 @@
   // تحميل المحافظ في قايمة TikTok
   async function loadWalletsDropdown() {
     try {
-      const savedWallet = localStorage.getItem('tt_wallet') || '';
+      const savedTT = localStorage.getItem('tt_wallet') || '';
+      const savedIT = localStorage.getItem('it_wallet') || '';
       const data = await sbGet('wallets', 'active=eq.true&order=type.asc&select=id,phone,serial_number,type,owner_name');
-      const sel = document.getElementById('ttWallet');
       const tLbl = { cash:'كاش', instapay:'إنستا باي', tilda:'تيلدا', fori:'فوري' };
-      sel.innerHTML = '<option value="">-- استلمت على (اختياري) --</option>';
-      (data||[]).forEach(w => {
-        const label = w.owner_name ? `${w.owner_name} — ${w.phone}` : `${w.phone}${w.serial_number ? ' ('+w.serial_number+')' : ''}`;
-        sel.innerHTML += `<option value="${w.id}">[${tLbl[w.type]||w.type}] ${label}</option>`;
-      });
-      // استرجاع المحفظة المحفوظة
-      if (savedWallet) sel.value = savedWallet;
+
+      function buildOptions(saved) {
+        let html = '<option value="">-- استلمت على (اختياري) --</option>';
+        (data||[]).forEach(w => {
+          const phone4 = w.phone.slice(-4);
+          const label = w.owner_name ? `${w.owner_name} (...${phone4})` : `...${phone4}${w.serial_number ? ' | '+w.serial_number : ''}`;
+          html += `<option value="${w.id}">[${tLbl[w.type]||w.type}] ${label}</option>`;
+        });
+        return html;
+      }
+
+      const ttSel = document.getElementById('ttWallet');
+      ttSel.innerHTML = buildOptions(savedTT);
+      if (savedTT) ttSel.value = savedTT;
+
+      const itSel = document.getElementById('itWallet');
+      if (itSel) { itSel.innerHTML = buildOptions(savedIT); if (savedIT) itSel.value = savedIT; }
+
+      const itBSel = document.getElementById('itBulkWallet');
+      if (itBSel) { itBSel.innerHTML = buildOptions(savedIT); if (savedIT) itBSel.value = savedIT; }
+
     } catch(e) {}
   }
 
   // باسورد المحافظ
-  let wUnlocked = false;
+  async function autoCheckWalletPassword(val) {
+    // بيتحقق أوتوماتيك لما تكتب
+    if (!val || val.length < 2) return;
+    await checkWalletPassword();
+  }
+
   async function checkWalletPassword() {
     const input = document.getElementById('wPassInput').value.trim();
     if (!input) return;
@@ -940,7 +974,7 @@
       <h3 style="color:var(--accent);margin-bottom:16px;">إدارة المحافظ</h3>
       <input type="password" id="wPassInput" placeholder="ادخل الباسورد"
         style="width:100%;padding:12px;background:#072f2a;border:1px solid var(--border);color:var(--ink);border-radius:8px;font-size:16px;outline:none;text-align:center;"
-        onkeypress="if(event.key==='Enter') checkWalletPassword()">
+        oninput="autoCheckWalletPassword(this.value)">
       <button onclick="checkWalletPassword()"
         style="width:100%;margin-top:12px;padding:12px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer;">
         دخول
