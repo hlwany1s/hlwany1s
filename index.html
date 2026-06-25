@@ -913,9 +913,10 @@
       function buildOptions(saved) {
         let html = '<option value="">-- استلمت على (اختياري) --</option>';
         (data||[]).forEach(w => {
-          const phone4 = w.phone.slice(-4);
-          const label = w.owner_name ? `${w.owner_name} (...${phone4})` : `...${phone4}${w.serial_number ? ' | '+w.serial_number : ''}`;
-          html += `<option value="${w.id}">[${tLbl[w.type]||w.type}] ${label}</option>`;
+          const label = w.owner_name
+            ? `${w.phone} — ${w.owner_name} [${tLbl[w.type]||w.type}]`
+            : `${w.phone} [${tLbl[w.type]||w.type}]`;
+          html += `<option value="${w.id}">${label}</option>`;
         });
         return html;
       }
