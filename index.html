@@ -122,6 +122,60 @@
       margin-top: 10px;
       flex-wrap: wrap;
     }
+
+    /* ===== Wallets ===== */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+    .kpi-card .kval { font-size: 26px; font-weight: 800; color: var(--accent); }
+    .kpi-card .kval.warn { color: var(--warn); }
+    .kpi-card .kval.gold { color: var(--gold); }
+    .kpi-card h4 { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .filter-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .ftab { padding: 8px 16px; background: var(--pill); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 700; }
+    .ftab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .wallets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+    .wallet-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; transition: 0.2s; }
+    .wallet-card.wlow { border-color: var(--warn); background: rgba(231,76,60,0.08); }
+    .wallet-card.wmed { border-color: var(--gold); }
+    .wallet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .wallet-phone { font-size: 15px; font-weight: 700; color: var(--ink); direction: ltr; }
+    .wallet-serial { font-size: 11px; color: var(--muted); direction: ltr; }
+    .wtype-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .wt-cash { background: rgba(25,246,167,0.15); color: var(--accent); }
+    .wt-instapay { background: rgba(29,108,255,0.2); color: #6db3ff; }
+    .wt-tilda { background: rgba(167,139,250,0.2); color: #a78bfa; }
+    .wt-fori { background: rgba(255,215,0,0.2); color: var(--gold); }
+    .wallet-owner { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    .wprogress-wrap { margin-bottom: 12px; }
+    .wprogress-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .wprogress-bar { height: 8px; background: var(--pill); border-radius: 4px; overflow: hidden; }
+    .wprogress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; background: var(--accent); }
+    .wprogress-fill.wfwarn { background: var(--warn); }
+    .wprogress-fill.wfmed { background: var(--gold); }
+    .wallet-amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .amt-box { background: var(--pill); border-radius: 8px; padding: 8px; text-align: center; }
+    .amt-box .amt-val { font-size: 16px; font-weight: 800; }
+    .amt-box .amt-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .amt-used { color: var(--gold); }
+    .amt-remain { color: var(--accent); }
+    .amt-remain.alow { color: var(--warn); }
+    .wallet-actions { display: flex; gap: 8px; }
+    .btn-wreceive { flex: 1; padding: 10px; background: var(--accent); color: var(--bg); border: none; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; }
+    .btn-wreceive:hover { background: var(--accent-2); transform: none; }
+    .btn-wspend { flex: 1; padding: 10px; background: var(--pill); color: var(--warn); border: 1px solid var(--warn); border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; }
+    .btn-wspend:hover { background: rgba(231,76,60,0.15); transform: none; }
+    .low-warn-banner { background: rgba(231,76,60,0.15); border: 1px solid var(--warn); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: var(--warn); display: none; }
+    .wmodal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .wmodal-overlay.open { display: flex; }
+    .wmodal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 90%; max-width: 420px; }
+    .wmodal h3 { font-size: 18px; color: var(--accent); margin-bottom: 16px; }
+    .wmodal input { width: 100%; padding: 12px; margin-top: 10px; background: #072f2a; border: 1px solid var(--border); color: var(--ink); border-radius: 8px; font-size: 15px; outline: none; }
+    .wmodal input:focus { border-color: var(--accent); }
+    .wmodal-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .wbtn-confirm { flex: 1; padding: 12px; background: var(--accent); color: var(--bg); border: none; border-radius: 8px; font-weight: 800; font-size: 15px; cursor: pointer; }
+    .wbtn-cancel { flex: 1; padding: 12px; background: var(--pill); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; }
+    .wmodal-status { margin-top: 10px; text-align: center; font-size: 14px; min-height: 20px; }
+    @media(max-width: 600px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
@@ -137,10 +191,11 @@
   <div class="tab-link" id="tab-itunes" onclick="switchTab('itunes')">
     <img src="https://upload.wikimedia.org/wikipedia/commons/d/df/ITunes_logo.svg" alt="iTunes"> ايتونز مصر
   </div>
+  <div class="tab-link" id="tab-wallets" onclick="switchTab('wallets')">💳 المحافظ</div>
 </nav>
 
 <div class="admin-box">
-  <select id="globalAdmin">
+  <select id="globalAdmin" onchange="saveGlobalSession()">
     <option value="">-- اختر الأدمن --</option>
     <option value="Ahmed">Ahmed</option>
     <option value="Tarek">Tarek</option>
@@ -163,6 +218,9 @@
       <button id="copyLiveCoinsBtn" class="btn-copy inline-hidden" onclick="copyLiveCoins()">نسخ الرقم</button>
     </div>
     <div id="copyLiveCoinsStatus" class="copy-status"></div>
+    <select id="ttWallet" style="margin-top:10px;" onchange="saveGlobalSession()">
+      <option value="">-- استلمت على (اختياري) --</option>
+    </select>
     <input id="note" type="text" placeholder="ملاحظة للعملية">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <button id="btnAdd">حفظ العملية ✔️</button>
@@ -289,36 +347,12 @@
 
   // ==================== Prices ====================
   const prices = {
-  75: 55,
-  100: 75,
-  150: 105,
-  200: 145,
-  300: 200,
-  350: 225,
-  500: 300,
-  700: 420,
-  830: 500,
-
-  1000: 590,
-  2000: 1180,
-  3000: 1770,
-  4000: 2360,
-  5000: 2950,
-  6000: 3550,
-  7000: 4130,
-  8000: 4720,
-  9000: 5310,
-  10000: 5850,
-
-  15000: 8775,
-  17500: 10265,
-  20000: 11700,
-  30000: 17400,
-  40000: 23360,
-  50000: 29000,
-  75000: 43500,
-  100000: 57500
-};
+    75:55,100:75,150:105,200:145,300:205,350:225,500:310,700:430,835:510,
+    1000:600,1430:858,1700:1020,2000:1200,2500:1500,3000:1800,3500:2100,
+    4000:2400,4500:2700,5000:3000,5500:3300,6000:3600,6500:3900,7000:4200,
+    9000:5400,10000:6000,15000:9000,17500:10500,25000:15000,30000:18000,
+    50000:30000,75000:45000,100000:60000
+  };
   const priceList = Object.keys(prices).map(c => ({ coins: Number(c), price: prices[c] })).sort((a,b) => a.price - b.price);
   const arabicDigitMap = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
   const ITUNES_CATS = ['150','200','250','300','400','500','600','750','1000','1500','2000','3000'];
@@ -351,6 +385,7 @@
     document.getElementById(t + '-page').classList.add('active');
     document.getElementById('tab-' + t).classList.add('active');
     if (t === 'itunes') { updateInv(); loadLastOps(); }
+    if (t === 'wallets') { if (wUnlocked) loadWallets(); }
   }
   function switchPullTab(tab) {
     document.getElementById('panelSingle').style.display = tab === 'single' ? '' : 'none';
@@ -428,9 +463,11 @@
     btn.disabled = true;
 
     try {
+      const walletId = document.getElementById('ttWallet').value;
       const res = await sbPost('operations', {
         admin, amount_egp: Math.round(money), coins: Math.round(coins),
-        type: 'فلوس→عملات', note, biz_date: bizDate, status: 'ACTIVE'
+        type: 'فلوس→عملات', note, biz_date: bizDate, status: 'ACTIVE',
+        wallet_id: walletId ? parseInt(walletId) : null
       });
 
       if (res && res[0] && res[0].id) {
@@ -710,9 +747,249 @@
     ['copyLiveCoinsBtn','copyCalcCoinsBtn','copyCalcPriceBtn'].forEach(id => document.getElementById(id).classList.add('inline-hidden'));
   }
 
+
+  // ==================== Wallets ====================
+  let wAllWallets = [], wCurrentFilter = 'all', wModalId = null, wModalMode = 'receive';
+
+  async function loadWallets() {
+    const data = await sbGet('wallet_summary', 'order=type.asc');
+    wAllWallets = data || [];
+    wRenderWallets();
+    wUpdateKPIs();
+  }
+
+  function wUpdateKPIs() {
+    const used   = wAllWallets.reduce((s,w) => s + Number(w.used_this_month||0), 0);
+    const remain = wAllWallets.reduce((s,w) => s + Number(w.remaining||0), 0);
+    const low    = wAllWallets.filter(w => w.low_limit).length;
+    document.getElementById('wKpiTotal').textContent  = wAllWallets.length;
+    document.getElementById('wKpiUsed').textContent   = fmt(used);
+    document.getElementById('wKpiRemain').textContent = fmt(remain);
+    document.getElementById('wKpiLow').textContent    = low;
+    document.getElementById('wLowBanner').style.display = low > 0 ? 'block' : 'none';
+  }
+
+  function wFilter(type, el) {
+    wCurrentFilter = type;
+    document.querySelectorAll('.ftab').forEach(f => f.classList.remove('active'));
+    el.classList.add('active');
+    wRenderWallets();
+  }
+
+  function wRenderWallets() {
+    const grid = document.getElementById('walletsGrid');
+    let list = wAllWallets;
+    if (wCurrentFilter === 'low') list = list.filter(w => w.low_limit);
+    else if (wCurrentFilter !== 'all') list = list.filter(w => w.type === wCurrentFilter);
+
+    if (!list.length) { grid.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1">لا توجد محافظ</div>'; return; }
+
+    const tLbl = { cash:'كاش', instapay:'إنستا باي', tilda:'تيلدا', fori:'فوري' };
+    const tCls = { cash:'wt-cash', instapay:'wt-instapay', tilda:'wt-tilda', fori:'wt-fori' };
+
+    grid.innerHTML = list.map(w => {
+      const used   = Number(w.used_this_month||0);
+      const limit  = Number(w.monthly_limit||200000);
+      const remain = Number(w.remaining||0);
+      const pct    = Math.min(100, Math.round(used/limit*100));
+      const isLow  = pct >= 90, isMed = pct >= 70 && pct < 90;
+      return `
+        <div class="wallet-card ${isLow?'wlow':isMed?'wmed':''}">
+          <div class="wallet-header">
+            <div>
+              <div class="wallet-phone" dir="ltr">${w.phone}</div>
+              ${w.serial_number ? `<div class="wallet-serial">Serial: ${w.serial_number}</div>` : ''}
+            </div>
+            <span class="wtype-badge ${tCls[w.type]}">${tLbl[w.type]}</span>
+          </div>
+          ${w.owner_name ? `<div class="wallet-owner">👤 ${w.owner_name}</div>` : ''}
+          <div class="wprogress-wrap">
+            <div class="wprogress-labels"><span>${pct}% مستخدم</span><span>${fmt(limit)} حد أقصى</span></div>
+            <div class="wprogress-bar"><div class="wprogress-fill ${isLow?'wfwarn':isMed?'wfmed':''}" style="width:${pct}%"></div></div>
+          </div>
+          <div class="wallet-amounts">
+            <div class="amt-box"><div class="amt-val amt-used">${fmt(used)}</div><div class="amt-lbl">مستخدم</div></div>
+            <div class="amt-box"><div class="amt-val amt-remain ${isLow?'alow':''}">${fmt(remain)}</div><div class="amt-lbl">باقي</div></div>
+          </div>
+          <div class="wallet-actions">
+            <button class="btn-wreceive" onclick="wOpenModal(${w.id},'receive','${w.phone}','${w.type}')">+ استقبال</button>
+            <button class="btn-wspend"   onclick="wOpenModal(${w.id},'spend',  '${w.phone}','${w.type}')">− صرف</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function wOpenModal(id, mode, phone, type) {
+    wModalId = id; wModalMode = mode;
+    const tLbl = { cash:'كاش', instapay:'إنستا باي', tilda:'تيلدا', fori:'فوري' };
+    document.getElementById('wModalTitle').textContent = mode === 'receive' ? '+ استقبال' : '− صرف';
+    document.getElementById('wModalInfo').textContent  = `${phone} — ${tLbl[type]}`;
+    document.getElementById('wModalAmount').value = '';
+    document.getElementById('wModalNote').value   = '';
+    document.getElementById('wModalStatus').textContent = '';
+    document.getElementById('wModalConfirm').style.background = mode === 'receive' ? 'var(--accent)' : 'var(--warn)';
+    document.getElementById('wModalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('wModalAmount').focus(), 100);
+  }
+
+  function wCloseModal() { document.getElementById('wModalOverlay').classList.remove('open'); }
+
+  async function wConfirm() {
+    const admin  = document.getElementById('globalAdmin').value;
+    const amount = parseFloat(document.getElementById('wModalAmount').value);
+    const note   = document.getElementById('wModalNote').value.trim();
+    const status = document.getElementById('wModalStatus');
+    const btn    = document.getElementById('wModalConfirm');
+
+    if (!admin)  { status.textContent = '❌ اختر الأدمن من الأعلى'; status.className = 'wmodal-status error'; return; }
+    if (!amount || amount <= 0) { status.textContent = '❌ ادخل مبلغ صحيح'; status.className = 'wmodal-status error'; return; }
+
+    btn.disabled = true;
+    status.textContent = 'جاري الحفظ...'; status.className = 'wmodal-status';
+
+    try {
+      const r = await fetch(SB_URL + '/rest/v1/wallet_transactions', {
+        method: 'POST',
+        headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          wallet_id: wModalId, admin,
+          amount: wModalMode === 'spend' ? -amount : amount,
+          note: note || null,
+          biz_date: new Date().toISOString().split('T')[0]
+        })
+      });
+      if (r.ok) {
+        status.textContent = '✅ تم الحفظ'; status.className = 'wmodal-status success';
+        setTimeout(() => { wCloseModal(); loadWallets(); }, 700);
+      } else {
+        throw new Error();
+      }
+    } catch(e) {
+      status.textContent = '❌ فشل الحفظ'; status.className = 'wmodal-status error';
+    }
+    btn.disabled = false;
+  }
+
+  document.getElementById('wModalOverlay').addEventListener('click', function(e) { if (e.target === this) wCloseModal(); });
   // ==================== Init ====================
+
+  // حفظ واسترجاع الأدمن والمحفظة
+  function saveGlobalSession() {
+    localStorage.setItem('tt_admin',  document.getElementById('globalAdmin').value);
+    localStorage.setItem('tt_wallet', document.getElementById('ttWallet').value);
+  }
+
+  function restoreGlobalSession() {
+    const admin  = localStorage.getItem('tt_admin')  || '';
+    const wallet = localStorage.getItem('tt_wallet') || '';
+    if (admin) document.getElementById('globalAdmin').value = admin;
+    // wallet restored after dropdown loads
+    return wallet;
+  }
+
+  // تحميل المحافظ في قايمة TikTok
+  async function loadWalletsDropdown() {
+    try {
+      const savedWallet = localStorage.getItem('tt_wallet') || '';
+      const data = await sbGet('wallets', 'active=eq.true&order=type.asc&select=id,phone,serial_number,type,owner_name');
+      const sel = document.getElementById('ttWallet');
+      const tLbl = { cash:'كاش', instapay:'إنستا باي', tilda:'تيلدا', fori:'فوري' };
+      sel.innerHTML = '<option value="">-- استلمت على (اختياري) --</option>';
+      (data||[]).forEach(w => {
+        const label = w.owner_name ? `${w.owner_name} — ${w.phone}` : `${w.phone}${w.serial_number ? ' ('+w.serial_number+')' : ''}`;
+        sel.innerHTML += `<option value="${w.id}">[${tLbl[w.type]||w.type}] ${label}</option>`;
+      });
+      // استرجاع المحفظة المحفوظة
+      if (savedWallet) sel.value = savedWallet;
+    } catch(e) {}
+  }
+
+  // باسورد المحافظ
+  let wUnlocked = false;
+  async function checkWalletPassword() {
+    const input = document.getElementById('wPassInput').value.trim();
+    if (!input) return;
+    try {
+      const data = await sbGet('admins', 'admin=eq.WALLET_PASS&select=password');
+      const pass = data && data[0] ? data[0].password : '1234';
+      if (input === pass) {
+        wUnlocked = true;
+        document.getElementById('wLockScreen').style.display = 'none';
+        document.getElementById('wContent').style.display = 'block';
+        loadWallets();
+      } else {
+        document.getElementById('wPassError').textContent = '❌ باسورد غلط';
+      }
+    } catch(e) {
+      document.getElementById('wPassError').textContent = '❌ حدث خطأ';
+    }
+  }
+
+  restoreGlobalSession();
   addBulkRow();
+  loadWalletsDropdown();
   setInterval(() => { document.getElementById('now').textContent = new Date().toLocaleString('ar-EG'); }, 1000);
 </script>
+
+<!-- ==================== Wallets ==================== -->
+<main id="wallets-page" class="page">
+  <!-- Lock Screen -->
+  <div id="wLockScreen" style="text-align:center;padding:60px 20px;">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:340px;margin:0 auto;">
+      <div style="font-size:40px;margin-bottom:16px;">🔒</div>
+      <h3 style="color:var(--accent);margin-bottom:16px;">إدارة المحافظ</h3>
+      <input type="password" id="wPassInput" placeholder="ادخل الباسورد"
+        style="width:100%;padding:12px;background:#072f2a;border:1px solid var(--border);color:var(--ink);border-radius:8px;font-size:16px;outline:none;text-align:center;"
+        onkeypress="if(event.key==='Enter') checkWalletPassword()">
+      <button onclick="checkWalletPassword()"
+        style="width:100%;margin-top:12px;padding:12px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer;">
+        دخول
+      </button>
+      <div id="wPassError" style="color:var(--warn);font-size:13px;margin-top:8px;min-height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- Content (hidden until password) -->
+  <div id="wContent" style="display:none;width:95%;max-width:1040px;margin:0 auto;">
+    <div class="kpi-row">
+      <div class="kpi-card"><h4>إجمالي المحافظ</h4><div class="kval" id="wKpiTotal">-</div></div>
+      <div class="kpi-card"><h4>إجمالي المستخدم</h4><div class="kval gold" id="wKpiUsed">-</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">جنيه</div></div>
+      <div class="kpi-card"><h4>إجمالي الباقي</h4><div class="kval" id="wKpiRemain">-</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">جنيه</div></div>
+      <div class="kpi-card"><h4>تحتاج تغيير</h4><div class="kval warn" id="wKpiLow">-</div></div>
+    </div>
+
+    <div class="low-warn-banner" id="wLowBanner">⚠️ محافظ وصلت 90% من الليمت — يفضل تغييرها</div>
+
+    <div class="filter-tabs">
+      <div class="ftab active" onclick="wFilter('all',this)">الكل</div>
+      <div class="ftab" onclick="wFilter('cash',this)">💵 كاش</div>
+      <div class="ftab" onclick="wFilter('instapay',this)">📲 إنستا باي</div>
+      <div class="ftab" onclick="wFilter('tilda',this)">📱 تيلدا</div>
+      <div class="ftab" onclick="wFilter('fori',this)">⚡ فوري</div>
+      <div class="ftab" onclick="wFilter('low',this)">🔴 قاربت تخلص</div>
+    </div>
+
+    <div class="wallets-grid" id="walletsGrid">
+      <div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1">جاري التحميل...</div>
+    </div>
+  </div>
+  </div>
+</main>
+
+<!-- Wallet Modal -->
+<div class="wmodal-overlay" id="wModalOverlay">
+  <div class="wmodal">
+    <h3 id="wModalTitle">إضافة حركة</h3>
+    <div id="wModalInfo" style="font-size:13px;color:var(--muted);margin-bottom:4px;"></div>
+    <input type="number" id="wModalAmount" placeholder="المبلغ بالجنيه" min="1">
+    <input type="text" id="wModalNote" placeholder="ملاحظة (اختياري)">
+    <div class="wmodal-actions">
+      <button class="wbtn-confirm" id="wModalConfirm" onclick="wConfirm()">تأكيد</button>
+      <button class="wbtn-cancel" onclick="wCloseModal()">إلغاء</button>
+    </div>
+    <div class="wmodal-status" id="wModalStatus"></div>
+  </div>
+</div>
+
 </body>
 </html>
