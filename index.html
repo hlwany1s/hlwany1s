@@ -1120,31 +1120,110 @@
   // ==================== Send Report ====================
   async function sendReport() {
     const btn = document.getElementById('btnReport');
-    const status = document.getElementById('reportStatus');
+    const statusEl = document.getElementById('reportStatus');
     btn.disabled = true;
-    btn.textContent = '⏳ جاري الإرسال...';
-    status.textContent = '';
+    btn.textContent = '⏳ جاري التجميع...';
+    statusEl.textContent = '';
+    statusEl.style.color = 'var(--muted)';
+
     try {
-      const r = await fetch('https://yigedrshfiftehckksil.supabase.co/functions/v1/dynamic-responder', {
+      const pad = n => String(n).padStart(2,'0');
+      const now = new Date(new Date().getTime() - 3*3600000);
+      const todayStr   = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}`;
+      const monthStart = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-01`;
+      const fmtN = n => Math.round(n).toLocaleString('en');
+
+      // جيب الداتا
+      const [ttAll, itAll, stockAll] = await Promise.all([
+        sbGet('operations', `status=eq.ACTIVE&select=amount_egp,coins,admin,biz_date`),
+        sbGet('itunes_ops', `select=category,admin,biz_date`),
+        sbGet('itunes_stock', `available=eq.true&select=category`),
+      ]);
+
+      // TikTok
+      const ttToday = (ttAll||[]).filter(r => r.biz_date === todayStr);
+      const ttMonth = (ttAll||[]).filter(r => r.biz_date >= monthStart);
+      const ttTodayOps   = ttToday.length;
+      const ttTodaySales = ttToday.reduce((s,r) => s+Number(r.amount_egp||0),0);
+      const ttTodayCoins = ttToday.reduce((s,r) => s+Number(r.coins||0),0);
+      const ttTodayCost  = Math.round(ttTodayCoins/1000*10.3*100)/100;
+      const ttMonthOps   = ttMonth.length;
+      const ttMonthSales = ttMonth.reduce((s,r) => s+Number(r.amount_egp||0),0);
+      const ttMonthCoins = ttMonth.reduce((s,r) => s+Number(r.coins||0),0);
+      const ttMonthCost  = Math.round(ttMonthCoins/1000*10.3*100)/100;
+
+      const ttAdminToday = {}, ttAdminMonth = {};
+      ttToday.forEach(r => { const a=r.admin||'?'; if(!ttAdminToday[a]) ttAdminToday[a]={ops:0,sales:0}; ttAdminToday[a].ops++; ttAdminToday[a].sales+=Number(r.amount_egp||0); });
+      ttMonth.forEach(r => { const a=r.admin||'?'; if(!ttAdminMonth[a]) ttAdminMonth[a]={ops:0,sales:0}; ttAdminMonth[a].ops++; ttAdminMonth[a].sales+=Number(r.amount_egp||0); });
+
+      const ttByDay = {};
+      ttMonth.forEach(r => { ttByDay[r.biz_date]=(ttByDay[r.biz_date]||0)+Number(r.amount_egp||0); });
+      const ttDays = Object.entries(ttByDay).sort((a,b)=>a[0].localeCompare(b[0]));
+      const ttMax  = Math.max(...ttDays.map(d=>d[1]),1);
+
+      // iTunes
+      const IT_PRICES = {"150":225,"250":325,"300":390,"400":520,"500":650,"600":780,"750":975,"1000":1300,"1500":1950,"2000":2600,"3000":3900};
+      const itToday = (itAll||[]).filter(r => r.biz_date === todayStr);
+      const itMonth = (itAll||[]).filter(r => r.biz_date >= monthStart);
+      const itTodaySold = itToday.length;
+      const itTodayRev  = itToday.reduce((s,r) => s+(IT_PRICES[r.category]||0),0);
+      const itMonthSold = itMonth.length;
+      const itMonthRev  = itMonth.reduce((s,r) => s+(IT_PRICES[r.category]||0),0);
+      const itAdminMonth = {};
+      itMonth.forEach(r => { const a=r.admin||'?'; if(!itAdminMonth[a]) itAdminMonth[a]={codes:0,rev:0}; itAdminMonth[a].codes++; itAdminMonth[a].rev+=(IT_PRICES[r.category]||0); });
+
+      const itByDay = {};
+      itMonth.forEach(r => { itByDay[r.biz_date]=(itByDay[r.biz_date]||0)+1; });
+      const itDays = Object.entries(itByDay).sort((a,b)=>a[0].localeCompare(b[0]));
+      const itMax  = Math.max(...itDays.map(d=>d[1]),1);
+
+      // Stock
+      const stockCounts = {};
+      (stockAll||[]).forEach(r => { stockCounts[r.category]=(stockCounts[r.category]||0)+1; });
+      const lowStock = Object.entries(stockCounts).filter(([,n])=>n<10).sort((a,b)=>Number(a[0])-Number(b[0]));
+
+      // HTML helpers
+      const barChart = (days,max,color) => {
+        if(!days.length) return '<p style="color:#aaa;text-align:center;font-size:12px;">لا توجد بيانات</p>';
+        return `<div style="display:flex;align-items:flex-end;gap:2px;height:80px;">${days.map(([date,val])=>{const h=Math.max(3,Math.round(val/max*76));return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;"><div style="width:100%;height:${h}px;background:${color};border-radius:2px 2px 0 0;"></div><span style="font-size:8px;color:#aaa;">${date.slice(8)}</span></div>`;}).join('')}</div>`;
+      };
+      const ttRows = data => {
+        const rows = Object.entries(data).sort((a,b)=>b[1].sales-a[1].sales);
+        if(!rows.length) return '<tr><td colspan="3" style="text-align:center;color:#aaa;padding:8px;">لا توجد بيانات</td></tr>';
+        return rows.map(([a,d],i)=>`<tr style="background:${i%2?'#f9f9f9':'#fff'}"><td style="padding:6px 8px;font-weight:bold;">${a}</td><td style="text-align:center;">${d.ops}</td><td style="text-align:center;">${fmtN(d.sales)} ج</td></tr>`).join('');
+      };
+      const itRows = data => {
+        const rows = Object.entries(data).sort((a,b)=>b[1].codes-a[1].codes);
+        if(!rows.length) return '<tr><td colspan="3" style="text-align:center;color:#aaa;padding:8px;">لا توجد بيانات</td></tr>';
+        return rows.map(([a,d],i)=>`<tr style="background:${i%2?'#f9f9f9':'#fff'}"><td style="padding:6px 8px;font-weight:bold;">${a}</td><td style="text-align:center;">${d.codes}</td><td style="text-align:center;">${fmtN(d.rev)} ج</td></tr>`).join('');
+      };
+      const stockRows = lowStock.length
+        ? lowStock.map(([cat,n],i)=>`<tr style="background:${i%2?'#fff3f3':'#fff'}"><td style="padding:6px 8px;font-weight:bold;">${cat} ج.م</td><td style="text-align:center;color:${n<5?'#e74c3c':'#e67e22'};font-weight:bold;">${n}</td><td style="text-align:center;">${n<5?'🔴 حرج':'🟡 منخفض'}</td></tr>`).join('')
+        : '<tr><td colspan="3" style="text-align:center;color:#19a060;padding:8px;font-weight:bold;">✅ الاستوك بخير</td></tr>';
+
+      const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"></head><body style="margin:0;padding:16px;background:#f0f0f0;font-family:Arial,sans-serif;"><div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;"><div style="background:#00332d;padding:22px;text-align:center;"><h1 style="color:#19f6a7;margin:0;font-size:20px;">📊 التقرير اليومي — hlwany1s</h1><p style="color:#d2e5df;margin:6px 0 0;font-size:13px;">${todayStr}</p></div><div style="padding:20px;"><h2 style="color:#00332d;border-right:4px solid #19f6a7;padding-right:10px;margin-top:0;font-size:17px;">🪙 تيك توك</h2><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="width:50%;padding:4px;"><div style="background:#00332d;border-radius:8px;padding:14px;text-align:center;"><div style="color:#d2e5df;font-size:11px;">اليوم</div><div style="color:#19f6a7;font-size:24px;font-weight:bold;margin:4px 0;">${fmtN(ttTodayOps)}</div><div style="color:#ffd700;font-size:13px;">${fmtN(ttTodaySales)} ج.م</div><div style="color:#aaa;font-size:11px;margin-top:2px;">${fmtN(ttTodayCoins)} عملة | $${ttTodayCost}</div></div></td><td style="width:50%;padding:4px;"><div style="background:#00332d;border-radius:8px;padding:14px;text-align:center;"><div style="color:#d2e5df;font-size:11px;">الشهر</div><div style="color:#19f6a7;font-size:24px;font-weight:bold;margin:4px 0;">${fmtN(ttMonthOps)}</div><div style="color:#ffd700;font-size:13px;">${fmtN(ttMonthSales)} ج.م</div><div style="color:#aaa;font-size:11px;margin-top:2px;">${fmtN(ttMonthCoins)} عملة | $${ttMonthCost}</div></div></td></tr></table><div style="background:#00332d;border-radius:8px;padding:12px;margin-bottom:14px;"><div style="color:#d2e5df;font-size:11px;margin-bottom:6px;">📈 مبيعات الشهر يومياً</div>${barChart(ttDays,ttMax,'#19f6a7')}</div><p style="font-size:13px;font-weight:bold;color:#00332d;margin-bottom:6px;">👥 الأدمنز اليوم</p><table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;"><tr style="background:#00332d;color:#fff;"><th style="padding:7px 8px;">الأدمن</th><th>عمليات</th><th>مبيعات</th></tr>${ttRows(ttAdminToday)}</table><p style="font-size:13px;font-weight:bold;color:#00332d;margin-bottom:6px;">👥 الأدمنز — الشهر</p><table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;"><tr style="background:#00332d;color:#fff;"><th style="padding:7px 8px;">الأدمن</th><th>عمليات</th><th>مبيعات</th></tr>${ttRows(ttAdminMonth)}</table><hr style="border:none;border-top:2px solid #f0f0f0;margin:20px 0;"><h2 style="color:#6a0dad;border-right:4px solid #8E24AA;padding-right:10px;font-size:17px;">🍎 ايتونز</h2><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="width:50%;padding:4px;"><div style="background:#4a0072;border-radius:8px;padding:14px;text-align:center;"><div style="color:#e1bee7;font-size:11px;">اليوم</div><div style="color:#ce93d8;font-size:24px;font-weight:bold;margin:4px 0;">${fmtN(itTodaySold)}</div><div style="color:#ffd700;font-size:13px;">${fmtN(itTodayRev)} ج.م</div></div></td><td style="width:50%;padding:4px;"><div style="background:#4a0072;border-radius:8px;padding:14px;text-align:center;"><div style="color:#e1bee7;font-size:11px;">الشهر</div><div style="color:#ce93d8;font-size:24px;font-weight:bold;margin:4px 0;">${fmtN(itMonthSold)}</div><div style="color:#ffd700;font-size:13px;">${fmtN(itMonthRev)} ج.م</div></div></td></tr></table><div style="background:#4a0072;border-radius:8px;padding:12px;margin-bottom:14px;"><div style="color:#e1bee7;font-size:11px;margin-bottom:6px;">📈 مبيعات الشهر يومياً</div>${barChart(itDays,itMax,'#ce93d8')}</div><p style="font-size:13px;font-weight:bold;color:#6a0dad;margin-bottom:6px;">👥 الأدمنز — الشهر</p><table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;"><tr style="background:#6a0dad;color:#fff;"><th style="padding:7px 8px;">الأدمن</th><th>أكواد</th><th>إيراد</th></tr>${itRows(itAdminMonth)}</table><p style="font-size:13px;font-weight:bold;color:#e74c3c;margin-bottom:6px;">📦 تحذيرات الاستوك</p><table style="width:100%;border-collapse:collapse;font-size:13px;"><tr style="background:#e74c3c;color:#fff;"><th style="padding:7px 8px;">الفئة</th><th>المتاح</th><th>الحالة</th></tr>${stockRows}</table></div><div style="background:#00332d;padding:12px;text-align:center;"><p style="color:#d2e5df;margin:0;font-size:11px;">hlwany1s — تقرير يومي</p></div></div></body></html>`;
+
+      // بعت الإيميل من Resend مباشرة
+      btn.textContent = '⏳ جاري الإرسال...';
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZ2VkcnNoZmlmdGVoY2trc2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNTA5NjQsImV4cCI6MjA5NTgyNjk2NH0.40Gj4yxV2Aw4_D0o4GI9OEOef5Ujl-tLGg9bwchq084',
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': 'Bearer re_icjHwMAb_QeP5mcXzhnB6h5BKMWSXJBB9', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'hlwany1s <onboarding@resend.dev>', to: 'hlwany1stwins@gmail.com', subject: `📊 التقرير اليومي ${todayStr} — hlwany1s`, html })
       });
-      if (r.ok) {
-        status.textContent = '✅ تم الإرسال — تحقق من إيميلك';
-        status.style.color = 'var(--accent)';
+      const result = await res.json();
+      if (result.id) {
+        statusEl.textContent = '✅ تم الإرسال — تحقق من إيميلك';
+        statusEl.style.color = 'var(--accent)';
       } else {
-        throw new Error();
+        throw new Error(JSON.stringify(result));
       }
     } catch(e) {
-      status.textContent = '❌ فشل الإرسال';
-      status.style.color = 'var(--warn)';
+      statusEl.textContent = '❌ فشل: ' + e.message;
+      statusEl.style.color = 'var(--warn)';
     }
     btn.disabled = false;
     btn.textContent = '📊 إرسال تقرير الآن';
-    setTimeout(() => { status.textContent = ''; }, 4000);
+    setTimeout(() => { statusEl.textContent = ''; }, 5000);
   }
 
   restoreGlobalSession();
