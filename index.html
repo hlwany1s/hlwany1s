@@ -1135,9 +1135,9 @@
 
       // جيب الداتا
       const [ttAll, itAll, stockAll] = await Promise.all([
-        sbGet('operations', `status=eq.ACTIVE&select=amount_egp,coins,admin,biz_date`),
-        sbGet('itunes_ops', `select=category,admin,biz_date`),
-        sbGet('itunes_stock', `available=eq.true&select=category`),
+        sbGet('operations', `status=eq.ACTIVE&select=amount_egp,coins,admin,biz_date&limit=10000`),
+        sbGet('itunes_ops', `select=category,admin,biz_date&limit=10000`),
+        sbGet('itunes_stock', `available=eq.true&select=category&limit=10000`),
       ]);
 
       // TikTok
