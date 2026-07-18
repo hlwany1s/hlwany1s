@@ -1133,11 +1133,10 @@
       const fmtN = n => Math.round(n).toLocaleString('en');
 
       // جيب الداتا من الـ Views مباشرة
-      const [ttDashAll, ttMonthAll, ttAdminTodayAll, ttAdminMonthAll,
+      const [ttTodayRaw, ttMonthAll, ttAdminMonthAll,
              itDashAll, itMonthAll, itAdminMonthAll, stockAll] = await Promise.all([
-        sbGet('tiktok_dashboard', `biz_date=eq.${todayStr}&select=total_ops,total_sales,total_coins,cost_usd`),
+        sbGet('operations', `status=eq.ACTIVE&biz_date=eq.${todayStr}&select=admin,amount_egp,coins`),
         sbGet('tiktok_monthly', `select=month,total_ops,total_sales,total_coins,cost_usd&order=month.desc&limit=1`),
-        sbGet('tiktok_admin_monthly', `month=eq.${todayStr.slice(0,7)}&select=admin,ops,sales`),
         sbGet('tiktok_admin_monthly', `month=eq.${todayStr.slice(0,7)}&select=admin,ops,sales&order=sales.desc`),
         sbGet('itunes_daily_rate', `biz_date=eq.${todayStr}&select=total_sold,revenue_egp`),
         sbGet('itunes_monthly_total', `month=eq.${todayStr.slice(0,7)}&select=total_sold,revenue_egp`),
@@ -1145,11 +1144,11 @@
         sbGet('itunes_stock', `available=eq.true&select=category&limit=10000`),
       ]);
 
-      // TikTok اليوم من operations مباشرة
+      // TikTok اليوم
       const ttTodayOps   = (ttTodayRaw||[]).length;
       const ttTodaySales = (ttTodayRaw||[]).reduce((s,r)=>s+Number(r.amount_egp||0),0);
-      const ttTodayCoins = (ttDashAll&&ttDashAll[0]) ? Number(ttDashAll[0].total_coins||0) : 0;
-      const ttTodayCost  = (ttDashAll&&ttDashAll[0]) ? Number(ttDashAll[0].cost_usd||0) : 0;
+      const ttTodayCoins = (ttTodayRaw||[]).reduce((s,r)=>s+Number(r.coins||0),0);
+      const ttTodayCost  = Math.round(ttTodayCoins/1000*10.3*100)/100;
 
       // TikTok الشهر
       const ttMn = ttMonthAll && ttMonthAll[0] ? ttMonthAll[0] : {};
@@ -1158,16 +1157,15 @@
       const ttMonthCoins = Number(ttMn.total_coins||0);
       const ttMonthCost  = Number(ttMn.cost_usd||0);
 
-      // TikTok admins اليوم من operations مباشرة
+      // TikTok admins اليوم
       const ttAdminToday = {};
-      const ttTodayRaw = await sbGet('operations', `status=eq.ACTIVE&biz_date=eq.${todayStr}&select=admin,amount_egp&limit=10000`);
       (ttTodayRaw||[]).forEach(r => {
         const a = r.admin||'?';
         if(!ttAdminToday[a]) ttAdminToday[a]={ops:0,sales:0};
         ttAdminToday[a].ops++;
         ttAdminToday[a].sales+=Number(r.amount_egp||0);
       });
-      // TikTok admins الشهر من الـ View
+      // TikTok admins الشهر
       const ttAdminMonth = {};
       (ttAdminMonthAll||[]).forEach(r => { ttAdminMonth[r.admin]={ops:Number(r.ops||0),sales:Number(r.sales||0)}; });
 
