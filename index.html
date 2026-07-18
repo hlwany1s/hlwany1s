@@ -184,6 +184,13 @@
   <img src="https://raw.githubusercontent.com/hlwany1s/Orders/refs/heads/main/hlwany_logo_final.png" alt="Logo">
   <h1>hlwany1s</h1>
   <div id="now" style="color:var(--muted);font-size:13px;margin-top:5px;">--:--</div>
+  <button id="btnReport" onclick="sendReport()"
+    style="margin-top:10px;background:var(--pill);border:1px solid var(--border);color:var(--muted);padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;min-height:auto;width:auto;transition:0.2s;"
+    onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+    onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+    📊 إرسال تقرير الآن
+  </button>
+  <div id="reportStatus" style="font-size:12px;color:var(--muted);margin-top:6px;min-height:18px;"></div>
 </header>
 
 <nav class="tabs-nav">
@@ -205,7 +212,6 @@
     <option value="Maryam">Maryam</option>
     <option value="Asmaa">Asmaa</option>
     <option value="Amira">Amira</option>
-    <option value="NEW CUS">🆕 NEW CUS</option>
   </select>
 </div>
 
@@ -1109,6 +1115,36 @@
     } catch(e) {
       document.getElementById('wPassError').textContent = '❌ حدث خطأ';
     }
+  }
+
+  // ==================== Send Report ====================
+  async function sendReport() {
+    const btn = document.getElementById('btnReport');
+    const status = document.getElementById('reportStatus');
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري الإرسال...';
+    status.textContent = '';
+    try {
+      const r = await fetch('https://yigedrshfiftehckksil.supabase.co/functions/v1/daily-report', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZ2VkcnNoZmlmdGVoY2trc2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNTA5NjQsImV4cCI6MjA5NTgyNjk2NH0.40Gj4yxV2Aw4_D0o4GI9OEOef5Ujl-tLGg9bwchq084',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (r.ok) {
+        status.textContent = '✅ تم الإرسال — تحقق من إيميلك';
+        status.style.color = 'var(--accent)';
+      } else {
+        throw new Error();
+      }
+    } catch(e) {
+      status.textContent = '❌ فشل الإرسال';
+      status.style.color = 'var(--warn)';
+    }
+    btn.disabled = false;
+    btn.textContent = '📊 إرسال تقرير الآن';
+    setTimeout(() => { status.textContent = ''; }, 4000);
   }
 
   restoreGlobalSession();
