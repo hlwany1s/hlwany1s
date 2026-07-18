@@ -1130,51 +1130,62 @@
       const pad = n => String(n).padStart(2,'0');
       const now = new Date(new Date().getTime() - 3*3600000);
       const todayStr   = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}`;
-      const monthStart = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-01`;
       const fmtN = n => Math.round(n).toLocaleString('en');
 
-      // جيب الداتا
-      const [ttAll, itAll, stockAll] = await Promise.all([
-        sbGet('operations', `status=eq.ACTIVE&select=amount_egp,coins,admin,biz_date&limit=10000`),
-        sbGet('itunes_ops', `select=category,admin,biz_date&limit=10000`),
+      // جيب الداتا من الـ Views مباشرة
+      const [ttDashAll, ttMonthAll, ttAdminTodayAll, ttAdminMonthAll,
+             itDashAll, itMonthAll, itAdminMonthAll, stockAll] = await Promise.all([
+        sbGet('tiktok_dashboard', `biz_date=eq.${todayStr}&select=total_ops,total_sales,total_coins,cost_usd`),
+        sbGet('tiktok_monthly', `select=month,total_ops,total_sales,total_coins,cost_usd&order=month.desc&limit=1`),
+        sbGet('tiktok_admin_monthly', `month=eq.${todayStr.slice(0,7)}&select=admin,ops,sales`),
+        sbGet('tiktok_admin_monthly', `month=eq.${todayStr.slice(0,7)}&select=admin,ops,sales`),
+        sbGet('itunes_daily_rate', `biz_date=eq.${todayStr}&select=total_sold,revenue_egp`),
+        sbGet('itunes_monthly_total', `month=eq.${todayStr.slice(0,7)}&select=total_sold,revenue_egp`),
+        sbGet('itunes_admin_monthly', `month=eq.${todayStr.slice(0,7)}&select=admin,total_sold,revenue_egp`),
         sbGet('itunes_stock', `available=eq.true&select=category&limit=10000`),
       ]);
 
-      // TikTok
-      const ttToday = (ttAll||[]).filter(r => r.biz_date === todayStr);
-      const ttMonth = (ttAll||[]).filter(r => r.biz_date >= monthStart);
-      const ttTodayOps   = ttToday.length;
-      const ttTodaySales = ttToday.reduce((s,r) => s+Number(r.amount_egp||0),0);
-      const ttTodayCoins = ttToday.reduce((s,r) => s+Number(r.coins||0),0);
-      const ttTodayCost  = Math.round(ttTodayCoins/1000*10.3*100)/100;
-      const ttMonthOps   = ttMonth.length;
-      const ttMonthSales = ttMonth.reduce((s,r) => s+Number(r.amount_egp||0),0);
-      const ttMonthCoins = ttMonth.reduce((s,r) => s+Number(r.coins||0),0);
-      const ttMonthCost  = Math.round(ttMonthCoins/1000*10.3*100)/100;
+      // TikTok اليوم
+      const ttTd = ttDashAll && ttDashAll[0] ? ttDashAll[0] : {};
+      const ttTodayOps   = Number(ttTd.total_ops||0);
+      const ttTodaySales = Number(ttTd.total_sales||0);
+      const ttTodayCoins = Number(ttTd.total_coins||0);
+      const ttTodayCost  = Number(ttTd.cost_usd||0);
 
+      // TikTok الشهر
+      const ttMn = ttMonthAll && ttMonthAll[0] ? ttMonthAll[0] : {};
+      const ttMonthOps   = Number(ttMn.total_ops||0);
+      const ttMonthSales = Number(ttMn.total_sales||0);
+      const ttMonthCoins = Number(ttMn.total_coins||0);
+      const ttMonthCost  = Number(ttMn.cost_usd||0);
+
+      // TikTok admins
       const ttAdminToday = {}, ttAdminMonth = {};
-      ttToday.forEach(r => { const a=r.admin||'?'; if(!ttAdminToday[a]) ttAdminToday[a]={ops:0,sales:0}; ttAdminToday[a].ops++; ttAdminToday[a].sales+=Number(r.amount_egp||0); });
-      ttMonth.forEach(r => { const a=r.admin||'?'; if(!ttAdminMonth[a]) ttAdminMonth[a]={ops:0,sales:0}; ttAdminMonth[a].ops++; ttAdminMonth[a].sales+=Number(r.amount_egp||0); });
+      (ttAdminTodayAll||[]).forEach(r => { ttAdminToday[r.admin]={ops:Number(r.ops||0),sales:Number(r.sales||0)}; });
+      (ttAdminMonthAll||[]).forEach(r => { ttAdminMonth[r.admin]={ops:Number(r.ops||0),sales:Number(r.sales||0)}; });
 
-      const ttByDay = {};
-      ttMonth.forEach(r => { ttByDay[r.biz_date]=(ttByDay[r.biz_date]||0)+Number(r.amount_egp||0); });
-      const ttDays = Object.entries(ttByDay).sort((a,b)=>a[0].localeCompare(b[0]));
+      // TikTok chart من الـ dashboard
+      const ttChartData = await sbGet('tiktok_dashboard', `select=biz_date,total_sales&order=biz_date.asc&biz_date=gte.${todayStr.slice(0,7)}-01`);
+      const ttDays = (ttChartData||[]).map(r => [r.biz_date, Number(r.total_sales||0)]);
       const ttMax  = Math.max(...ttDays.map(d=>d[1]),1);
 
-      // iTunes
-      const IT_PRICES = {"150":225,"250":325,"300":390,"400":520,"500":650,"600":780,"750":975,"1000":1300,"1500":1950,"2000":2600,"3000":3900};
-      const itToday = (itAll||[]).filter(r => r.biz_date === todayStr);
-      const itMonth = (itAll||[]).filter(r => r.biz_date >= monthStart);
-      const itTodaySold = itToday.length;
-      const itTodayRev  = itToday.reduce((s,r) => s+(IT_PRICES[r.category]||0),0);
-      const itMonthSold = itMonth.length;
-      const itMonthRev  = itMonth.reduce((s,r) => s+(IT_PRICES[r.category]||0),0);
-      const itAdminMonth = {};
-      itMonth.forEach(r => { const a=r.admin||'?'; if(!itAdminMonth[a]) itAdminMonth[a]={codes:0,rev:0}; itAdminMonth[a].codes++; itAdminMonth[a].rev+=(IT_PRICES[r.category]||0); });
+      // iTunes اليوم
+      const itTd = itDashAll && itDashAll[0] ? itDashAll[0] : {};
+      const itTodaySold = Number(itTd.total_sold||0);
+      const itTodayRev  = Number(itTd.revenue_egp||0);
 
-      const itByDay = {};
-      itMonth.forEach(r => { itByDay[r.biz_date]=(itByDay[r.biz_date]||0)+1; });
-      const itDays = Object.entries(itByDay).sort((a,b)=>a[0].localeCompare(b[0]));
+      // iTunes الشهر
+      const itMn = itMonthAll && itMonthAll[0] ? itMonthAll[0] : {};
+      const itMonthSold = Number(itMn.total_sold||0);
+      const itMonthRev  = Number(itMn.revenue_egp||0);
+
+      // iTunes admins
+      const itAdminMonth = {};
+      (itAdminMonthAll||[]).forEach(r => { itAdminMonth[r.admin]={codes:Number(r.total_sold||0),rev:Number(r.revenue_egp||0)}; });
+
+      // iTunes chart
+      const itChartData = await sbGet('itunes_daily_rate', `select=biz_date,total_sold&order=biz_date.asc&biz_date=gte.${todayStr.slice(0,7)}-01`);
+      const itDays = (itChartData||[]).map(r => [r.biz_date, Number(r.total_sold||0)]);
       const itMax  = Math.max(...itDays.map(d=>d[1]),1);
 
       // Stock
